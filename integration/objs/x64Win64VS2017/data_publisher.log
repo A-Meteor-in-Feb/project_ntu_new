@@ -1,0 +1,7 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (.\objs\x64Win64VS2017\) contains files shared from another project (data_subscriber.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  data_publisher.cxx
+  dataPlugin.cxx
+  data.cxx
+  vehicle_subscriber.cpp
+  Generating Code...
+  data_publisher-x64Win64VS2017.vcxproj -> D:\codes\hahaha\version06\integration\objs\x64Win64VS2017\data_publisher.exe
