@@ -2,3 +2,5 @@ tele2vehicle/.vs/**
 tele2vehicle/objs/**
 vehicle2tele/.vs/**
 vehicle2tele/objs/**
+integration/.vs/**
+integration/objs/**
