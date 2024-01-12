@@ -15,11 +15,11 @@ void run_tele_publisher_application(unsigned int domain_id, bool start) {
 	* This function is for the tele operation platform to write the control data.
 	*/
 
-	dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
+	dds::domain::DomainParticipant vehicle2tele_participant(domain_id);
 	
-	dds::pub::Publisher tele_publisher(tele2vehicle_participant);
+	dds::pub::Publisher tele_publisher(vehicle2tele_participant);
 
-	dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
+	dds::topic::Topic<control_data> control_topic(vehicle2tele_participant, "control_data");
 
 	dds::pub::DataWriter<control_data> control_writer(tele_publisher, control_topic);
 
@@ -40,7 +40,7 @@ void run_tele_publisher_application(unsigned int domain_id, bool start) {
 		control_writer.write(data);
 
 		// Send once every 10 seconds
-		rti::util::sleep(dds::core::Duration(5));
+		rti::util::sleep(dds::core::Duration(2));
 	}
 }
 

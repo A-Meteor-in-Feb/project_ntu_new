@@ -157,7 +157,7 @@ void run_subscriber_application(unsigned int domain_id){
     while (!application::shutdown_requested) {
 
         // Run the handlers of the active conditions
-        waitset.dispatch(dds::core::Duration(8));
+        waitset.dispatch(dds::core::Duration(3));
 
         if (connected & !start) {
             start = TRUE;
@@ -165,7 +165,7 @@ void run_subscriber_application(unsigned int domain_id){
             std::thread tele2vehicle_tele_start(tele_publisher, domain_id, std::ref(start));
         }
 
-        if(!connected & start ){
+        if(!connected && start ){
             start = FALSE;
             std::thread tele2vehicle_tele_stop(std::move(tele2vehicle_tele_start));
         }

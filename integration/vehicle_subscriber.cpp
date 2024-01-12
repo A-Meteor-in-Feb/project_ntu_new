@@ -37,11 +37,11 @@ void run_vehicle_subscriber_application(unsigned int domain_id, bool start) {
 	*/
 	std::cout << "here" << std::endl;
 
-	dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
+	dds::domain::DomainParticipant vehicle2tele_participant(domain_id);
 
-	dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
+	dds::topic::Topic<control_data> control_topic(vehicle2tele_participant, "control_data");
 
-	dds::sub::Subscriber vehicle_subscriber(tele2vehicle_participant);
+	dds::sub::Subscriber vehicle_subscriber(vehicle2tele_participant);
 
 	dds::sub::DataReader<control_data> control_reader(vehicle_subscriber, control_topic);
 
@@ -63,7 +63,7 @@ void run_vehicle_subscriber_application(unsigned int domain_id, bool start) {
 
 	while (start) {
 		std::cout << "waiting to receive data ..." << std::endl;
-		waitset.dispatch(dds::core::Duration(8));
+		waitset.dispatch(dds::core::Duration(3));
 	}
 }
 

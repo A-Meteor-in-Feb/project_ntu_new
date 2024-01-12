@@ -75,9 +75,6 @@ void run_publisher_application(unsigned int domain_id){
 
     unsigned int samples_written = 0;
 
-    std::thread tele2vehicle_vehicle_start;
-    bool start = FALSE;
-
     // Main loop, write data
     while(!application::shutdown_requested){
 
@@ -124,24 +121,26 @@ void run_publisher_application(unsigned int domain_id){
             imu_writer.write(imu_data);
             op_writer.write(op_data);
 
-
-            // another thread to make the vehicle perform as a subscriber to receive control data sent by tele.
-            if (!start) {
-                start = TRUE;
-                std::thread tele2vehicle_vehicle_start(vehicle_subscriber, domain_id, std::ref(start));
-            }
-
         }
-        else {
-
-            if (start) {
-                start = FALSE;
-                std::thread tele2vehicle_vehicle_stop(std::move(tele2vehicle_vehicle_start));
-            }
-        }
+        
 
         // Send once every 10 seconds
-        rti::util::sleep(dds::core::Duration(5));
+        rti::util::sleep(dds::core::Duration(2));
+
+
+        std::thread tele2vehicle_vehicle_start;
+        bool start = FALSE;
+
+        // another thread to make the vehicle perform as a subscriber to receive control data sent by tele.
+        if (connected && !start) {
+            start = TRUE;
+            std::thread tele2vehicle_vehicle_start(vehicle_subscriber, domain_id, std::ref(start));
+        }
+
+        if (!connected && start) {
+            start = FALSE;
+            std::thread tele2vehicle_vehicle_stop(std::move(tele2vehicle_vehicle_start));
+        }
 
         if (samples_written % 5 == 0) {
             std::string str_change;
