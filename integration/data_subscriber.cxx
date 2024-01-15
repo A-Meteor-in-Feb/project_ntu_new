@@ -13,7 +13,7 @@
 
 //declaration
 void run_tele_subscriber_application(unsigned int domain_id, std::promise<bool> &online_value, std::promise<bool> &connected_value);
-void run_tele_publisher_application(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected);
+void run_tele_publisher(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected);
 
 
 int main(int argc, char *argv[]){
@@ -39,9 +39,9 @@ int main(int argc, char *argv[]){
     std::future<bool> connected = connected_value.get_future();
 
 
-    std::thread vehicle2tele_tele_sub(run_tele_subscriber_application, arguments.domain_id, std::ref(online_value), std::ref(connected_value));
-    std::thread tele2vehicle_tele_pub(run_tele_publisher_application, arguments.domain_id, std::ref(online), std::ref(connected));
-    
+    std::thread vehicle2tele_tele_sub(run_tele_subscriber_application, arguments.domain_id, std::ref(online_value), std::ref(connected_value));    
+    std::thread tele2vehicle_tele_pub(run_tele_publisher, arguments.domain_id, std::ref(online), std::ref(connected));
+ 
 
     vehicle2tele_tele_sub.join();
     tele2vehicle_tele_pub.join();

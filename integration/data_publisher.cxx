@@ -11,7 +11,7 @@
 
 //declaration
 void run_vehicle_publisher_application(unsigned int domain_id, std::promise<bool> &online_value, std::promise<bool> &connected_value);
-void run_vehicle_subscriber_application(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected);
+void run_vehicle_subscriber(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected);
 
 int main(int argc, char* argv[]) {
 
@@ -36,9 +36,9 @@ int main(int argc, char* argv[]) {
     std::future<bool> online = online_value.get_future();
     std::future<bool> connected = connected_value.get_future();
 
-
+   
     std::thread vehicle2tele_vehicle_pub(run_vehicle_publisher_application, arguments.domain_id, std::ref(online_value), std::ref(connected_value));
-    std::thread tele2vehicle_vehicle_sub(run_vehicle_subscriber_application, arguments.domain_id, std::ref(online), std::ref(connected));
+    std::thread tele2vehicle_vehicle_sub(run_vehicle_subscriber, arguments.domain_id, std::ref(online), std::ref(connected));
     
 
     vehicle2tele_vehicle_pub.join();

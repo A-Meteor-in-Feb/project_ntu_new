@@ -29,7 +29,7 @@ void process_data(dds::sub::DataReader<control_data> control_reader) {
 }
 
 
-void run_vehicle_subscriber_application(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected) {
+void run_vehicle_subscriber_application(unsigned int domain_id) {
 	/*
 	* parameter: domain_id, which is supposed to be same as vehicle2tele app.
 	*			 online: true or false; connected: true or false.
@@ -37,36 +37,37 @@ void run_vehicle_subscriber_application(unsigned int domain_id, std::future<bool
 	* This function is for the vehicle to receive the control data which 
 	*	is sent from the tele operation platform.
 	*/
-	if (online.get() & connected.get()) {
+	dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
 
-		dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
+	dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
 
-		dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
+	dds::sub::Subscriber vehicle_subscriber(tele2vehicle_participant);
 
-		dds::sub::Subscriber vehicle_subscriber(tele2vehicle_participant);
-
-		dds::sub::DataReader<control_data> control_reader(vehicle_subscriber, control_topic);
+	dds::sub::DataReader<control_data> control_reader(vehicle_subscriber, control_topic);
 
 
-		// this place will have an error, because one one
-		dds::sub::cond::ReadCondition read_condition(
-			control_reader,
-			dds::sub::status::DataState::any(),
-			[control_reader]() {
-				//take data.
-				process_data(control_reader);
-			}
-		);
-
-		dds::core::cond::WaitSet waitset;
-		waitset += read_condition;
-
-		while (online.get() & connected.get()) {
-			std::cout << "waiting to receive data ..." << std::endl;
-			waitset.dispatch(dds::core::Duration(3));
+	// this place will have an error, because one one
+	dds::sub::cond::ReadCondition read_condition(
+		control_reader,
+		dds::sub::status::DataState::any(),
+		[control_reader]() {
+			//take data.
+			process_data(control_reader);
 		}
+	);
 
+	dds::core::cond::WaitSet waitset;
+	waitset += read_condition;
+
+	while (true) {
+		std::cout << "waiting to receive data ..." << std::endl;
+		waitset.dispatch(dds::core::Duration(3));
 	}
 }
 
+void run_vehicle_subscriber(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected) {
+	if (online.get() && connected.get()) {
+		run_vehicle_subscriber_application(domain_id);
+	}
+}
 
