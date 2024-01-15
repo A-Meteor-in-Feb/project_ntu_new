@@ -288,6 +288,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="tele_publisher.cpp" />
+    <ClCompile Include="tele_subscriber.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.hpp" />

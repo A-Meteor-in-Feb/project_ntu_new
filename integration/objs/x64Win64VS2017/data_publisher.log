@@ -2,6 +2,7 @@
   data_publisher.cxx
   dataPlugin.cxx
   data.cxx
+  vehicle_publisher.cpp
   vehicle_subscriber.cpp
   Generating Code...
   data_publisher-x64Win64VS2017.vcxproj -> D:\codes\hahaha\version06\integration\objs\x64Win64VS2017\data_publisher.exe

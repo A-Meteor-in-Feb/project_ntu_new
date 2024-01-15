@@ -3,5 +3,6 @@
   dataPlugin.cxx
   data.cxx
   tele_publisher.cpp
+  tele_subscriber.cpp
   Generating Code...
   data_subscriber-x64Win64VS2017.vcxproj -> D:\codes\hahaha\version06\integration\objs\x64Win64VS2017\data_subscriber.exe

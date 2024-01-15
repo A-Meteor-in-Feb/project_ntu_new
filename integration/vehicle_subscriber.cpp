@@ -1,6 +1,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <future>
 
 #include <dds/sub/ddssub.hpp>
 #include <dds/core/ddscore.hpp>
@@ -28,68 +29,44 @@ void process_data(dds::sub::DataReader<control_data> control_reader) {
 }
 
 
-void run_vehicle_subscriber_application(unsigned int domain_id, bool start) {
+void run_vehicle_subscriber_application(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected) {
 	/*
 	* parameter: domain_id, which is supposed to be same as vehicle2tele app.
+	*			 online: true or false; connected: true or false.
 	* return: nothing
 	* This function is for the vehicle to receive the control data which 
 	*	is sent from the tele operation platform.
 	*/
-	std::cout << "here" << std::endl;
+	if (online.get() & connected.get()) {
 
-	dds::domain::DomainParticipant vehicle2tele_participant(domain_id);
+		dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
 
-	dds::topic::Topic<control_data> control_topic(vehicle2tele_participant, "control_data");
+		dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
 
-	dds::sub::Subscriber vehicle_subscriber(vehicle2tele_participant);
+		dds::sub::Subscriber vehicle_subscriber(tele2vehicle_participant);
 
-	dds::sub::DataReader<control_data> control_reader(vehicle_subscriber, control_topic);
+		dds::sub::DataReader<control_data> control_reader(vehicle_subscriber, control_topic);
 
-	
-	// this place will have an error, because one one
-	dds::sub::cond::ReadCondition read_condition(
-		control_reader,
-		dds::sub::status::DataState::any(),
-		[control_reader]() {
-			//take data.
-			process_data(control_reader);
+
+		// this place will have an error, because one one
+		dds::sub::cond::ReadCondition read_condition(
+			control_reader,
+			dds::sub::status::DataState::any(),
+			[control_reader]() {
+				//take data.
+				process_data(control_reader);
+			}
+		);
+
+		dds::core::cond::WaitSet waitset;
+		waitset += read_condition;
+
+		while (online.get() & connected.get()) {
+			std::cout << "waiting to receive data ..." << std::endl;
+			waitset.dispatch(dds::core::Duration(3));
 		}
-	);
 
-	std::cout << "here 2" << std::endl;
-
-	dds::core::cond::WaitSet waitset;
-	waitset += read_condition;
-
-	while (start) {
-		std::cout << "waiting to receive data ..." << std::endl;
-		waitset.dispatch(dds::core::Duration(3));
 	}
 }
 
 
-void vehicle_subscriber(unsigned int domain_id, bool start) {
-	/*
-	* parameter: domain_id, which is introduced from the other thread
-	* return: nothing
-	* This function acts as an interface for vehicle to receive the control data.
-	*/
-
-	if (start) {
-		std::cout << "\nconnected: " << start << std::endl;
-
-		try {
-			run_vehicle_subscriber_application(domain_id, start);
-		}
-		catch (const std::exception& ex) {
-			//This will catch DDS exceptions
-			std::cerr << "Exception in run_subscriber_application(): " << ex.what()
-				<< std::endl;
-		}
-	}
-	else {
-		std::cout << "\n vehicle subscriber is not being invoked." << std::endl;
-		// Releases the memory used by the participant factory.
-		dds::domain::DomainParticipant::finalize_participant_factory();
-	}
-}
