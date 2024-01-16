@@ -9,24 +9,24 @@
 #include "data.hpp"
 
 
-void run_tele_publisher_application(unsigned int domain_id) {
+void run_tele_publisher_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected) {
 	/*
 	* parameter: domain_id, online, connected
 	* return: nothing
 	* This function is for the tele operation platform to write the control data.
 	*/
 
-	dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
+	dds::domain::DomainParticipant tele_participant(domain_id);
 
-	dds::pub::Publisher tele_publisher(tele2vehicle_participant);
+	dds::pub::Publisher tele_publisher(tele_participant);
 
-	dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
+	dds::topic::Topic<control_data> control_topic(tele_participant, "control_data");
 
 	dds::pub::DataWriter<control_data> control_writer(tele_publisher, control_topic);
 
 	control_data data;
 
-	while (true) {
+	while (ato_online.load() & ato_connected.load()) {
 
 		data.acceleration(100.0);
 		data.brake(100.0);
@@ -46,9 +46,12 @@ void run_tele_publisher_application(unsigned int domain_id) {
 	
 }
 
-void run_tele_publisher(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected) {
-	if (online.get() && connected.get()) {
-		run_tele_publisher_application(domain_id);
+void run_tele_publisher(unsigned int domain_id, std::atomic<bool> &online, std::atomic<bool> &connected) {
+	
+	while (true) {
+		if (online.load() & connected.load()) {
+			run_tele_publisher_application(domain_id, std::ref(online), std::ref(connected));
+		}
 	}
 }
 

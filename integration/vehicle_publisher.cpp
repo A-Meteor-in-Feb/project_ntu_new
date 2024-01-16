@@ -35,28 +35,33 @@ void basic_properties(bool* online, bool* connected) {
     }
 }
 
-void run_vehicle_publisher_application(unsigned int domain_id, std::promise<bool> &online_value, std::promise<bool> &connected_value) {
+void run_vehicle_publisher_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected) {
 
     std::string vin = "vehicle" + std::to_string(domain_id);
 
     bool online;
     bool connected;
     basic_properties(&online, &connected);
-    
-    online_value.set_value(online);
-    connected_value.set_value(connected);
+
+    bool online_record;
+    bool connected_record;
+    online_record = online;
+    connected_record = connected;
+
+    ato_online = online;
+    ato_connected = connected;
 
     // Start communicating in a domain, usually one participant per application
-    dds::domain::DomainParticipant vehicle2tele_participant(domain_id);
-
-    // Create a Topic with a name and a datatype
-    dds::topic::Topic<status_data> status_topic(vehicle2tele_participant, "status_data");
-    dds::topic::Topic<GPSlocation_data> gps_topic(vehicle2tele_participant, "GPSlocation_data");
-    dds::topic::Topic<IMU_data> imu_topic(vehicle2tele_participant, "IMU_data");
-    dds::topic::Topic<other_properties_data> op_topic(vehicle2tele_participant, "other_properties_data");
+    dds::domain::DomainParticipant vehicle_participant(domain_id);
 
     // Create a Publisher
-    dds::pub::Publisher vehicle_publisher(vehicle2tele_participant);
+    dds::pub::Publisher vehicle_publisher(vehicle_participant);
+
+    // Create a Topic with a name and a datatype
+    dds::topic::Topic<status_data> status_topic(vehicle_participant, "status_data");
+    dds::topic::Topic<GPSlocation_data> gps_topic(vehicle_participant, "GPSlocation_data");
+    dds::topic::Topic<IMU_data> imu_topic(vehicle_participant, "IMU_data");
+    dds::topic::Topic<other_properties_data> op_topic(vehicle_participant, "other_properties_data");
 
     // Create a DataWriter with default QoS
     dds::pub::DataWriter<status_data> status_writer(vehicle_publisher, status_topic);
@@ -120,16 +125,24 @@ void run_vehicle_publisher_application(unsigned int domain_id, std::promise<bool
         // Send once every 2 seconds
         rti::util::sleep(dds::core::Duration(2));
 
-
         if (samples_written % 5 == 0) {
             std::string str_change;
-            std::cout << "Do you want to change the status? (y/n)" << std::endl;
+
+            std::cout << "change status ? (y/n)" << std::endl;
             std::getline(std::cin, str_change);
+
             if (str_change == "y") {
                 basic_properties(&online, &connected);
-                online_value.set_value(online);
-                connected_value.set_value(connected);
+                if (online != online_record) {
+                    ato_online = online;
+                    online_record = online;
+                }
+                if (connected != connected_record) {
+                    ato_connected = connected;
+                    connected_record = connected;
+                }
             }
         }
+
     }
 }

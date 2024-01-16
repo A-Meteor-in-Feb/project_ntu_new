@@ -29,7 +29,7 @@ void process_data(dds::sub::DataReader<control_data> control_reader) {
 }
 
 
-void run_vehicle_subscriber_application(unsigned int domain_id) {
+void run_vehicle_subscriber_application(unsigned int domain_id, std::atomic<bool> &online, std::atomic<bool> &connected) {
 	/*
 	* parameter: domain_id, which is supposed to be same as vehicle2tele app.
 	*			 online: true or false; connected: true or false.
@@ -37,11 +37,11 @@ void run_vehicle_subscriber_application(unsigned int domain_id) {
 	* This function is for the vehicle to receive the control data which 
 	*	is sent from the tele operation platform.
 	*/
-	dds::domain::DomainParticipant tele2vehicle_participant(domain_id);
+	dds::domain::DomainParticipant vehicle_participant(domain_id);
 
-	dds::topic::Topic<control_data> control_topic(tele2vehicle_participant, "control_data");
+	dds::sub::Subscriber vehicle_subscriber(vehicle_participant);
 
-	dds::sub::Subscriber vehicle_subscriber(tele2vehicle_participant);
+	dds::topic::Topic<control_data> control_topic(vehicle_participant, "control_data");
 
 	dds::sub::DataReader<control_data> control_reader(vehicle_subscriber, control_topic);
 
@@ -59,15 +59,19 @@ void run_vehicle_subscriber_application(unsigned int domain_id) {
 	dds::core::cond::WaitSet waitset;
 	waitset += read_condition;
 
-	while (true) {
-		std::cout << "waiting to receive data ..." << std::endl;
+	while (online.load() & connected.load()) {
+		std::cout << "\nwaiting to receive data:" << std::endl;
 		waitset.dispatch(dds::core::Duration(3));
 	}
 }
 
-void run_vehicle_subscriber(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected) {
-	if (online.get() && connected.get()) {
-		run_vehicle_subscriber_application(domain_id);
+void run_vehicle_subscriber(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected) {
+	while (true) {
+		//std::cout << online.load() << connected.load() << std::endl;
+		if (ato_online.load() && ato_connected.load()) {
+			run_vehicle_subscriber_application(domain_id, std::ref(ato_online), std::ref(ato_connected));
+		}
 	}
+	
 }
 

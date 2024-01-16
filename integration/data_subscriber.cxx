@@ -12,8 +12,8 @@
 #include "application.hpp" 
 
 //declaration
-void run_tele_subscriber_application(unsigned int domain_id, std::promise<bool> &online_value, std::promise<bool> &connected_value);
-void run_tele_publisher(unsigned int domain_id, std::future<bool> &online, std::future<bool> &connected);
+void run_tele_subscriber_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected);
+void run_tele_publisher(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected);
 
 
 int main(int argc, char *argv[]){
@@ -33,18 +33,16 @@ int main(int argc, char *argv[]){
     rti::config::Logger::instance().verbosity(arguments.verbosity);
 
 
-    std::promise<bool> online_value;
-    std::promise<bool> connected_value;
-    std::future<bool> online = online_value.get_future();
-    std::future<bool> connected = connected_value.get_future();
+    std::atomic<bool> ato_online;
+    std::atomic<bool> ato_connected;
 
 
-    std::thread vehicle2tele_tele_sub(run_tele_subscriber_application, arguments.domain_id, std::ref(online_value), std::ref(connected_value));    
-    std::thread tele2vehicle_tele_pub(run_tele_publisher, arguments.domain_id, std::ref(online), std::ref(connected));
+    std::thread vehicle2tele_tele(run_tele_subscriber_application, arguments.domain_id, std::ref(ato_online), std::ref(ato_connected));    
+    std::thread tele2vehicle_tele(run_tele_publisher, arguments.domain_id, std::ref(ato_online), std::ref(ato_connected));
  
 
-    vehicle2tele_tele_sub.join();
-    tele2vehicle_tele_pub.join();
+    vehicle2tele_tele.join();
+    tele2vehicle_tele.join();
     // Releases the memory used by the participant factory.  Optional at
     // application exit
     dds::domain::DomainParticipant::finalize_participant_factory();

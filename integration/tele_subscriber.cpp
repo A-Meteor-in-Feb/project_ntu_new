@@ -49,18 +49,18 @@ int process_data(dds::sub::DataReader<status_data> status_reader, bool* online, 
 
 
 
-void run_tele_subscriber_application(unsigned int domain_id, std::promise<bool>& online_value, std::promise<bool>& connected_value) {
+void run_tele_subscriber_application(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected) {
 
     // Start communicating in a domain, usually one participant per application
-    dds::domain::DomainParticipant vehicle2tele_participant(domain_id);
+    dds::domain::DomainParticipant tele_participant(domain_id);
 
-    dds::sub::Subscriber tele_subscriber(vehicle2tele_participant);
+    dds::sub::Subscriber tele_subscriber(tele_participant);
 
     // Create a Topic with a name and a datatype
-    dds::topic::Topic<status_data> status_topic(vehicle2tele_participant, "status_data");
-    dds::topic::Topic<GPSlocation_data> gps_topic(vehicle2tele_participant, "GPSlocation_data");
-    dds::topic::Topic<IMU_data> imu_topic(vehicle2tele_participant, "IMU_data");
-    dds::topic::Topic<other_properties_data> op_topic(vehicle2tele_participant, "other_properties_data");
+    dds::topic::Topic<status_data> status_topic(tele_participant, "status_data");
+    dds::topic::Topic<GPSlocation_data> gps_topic(tele_participant, "GPSlocation_data");
+    dds::topic::Topic<IMU_data> imu_topic(tele_participant, "IMU_data");
+    dds::topic::Topic<other_properties_data> op_topic(tele_participant, "other_properties_data");
 
     // Create DataReader with default Qos
     dds::sub::DataReader<status_data> status_reader(tele_subscriber, status_topic);
@@ -72,6 +72,9 @@ void run_tele_subscriber_application(unsigned int domain_id, std::promise<bool>&
     unsigned int samples_read = 0;
     bool online;
     bool connected;
+    // To judge whether we have to reset the shared values of ato_online and ato_connected.
+    bool online_record;
+    bool connected_record;
 
     dds::sub::cond::ReadCondition status_read_condition(
         status_reader,
@@ -81,9 +84,11 @@ void run_tele_subscriber_application(unsigned int domain_id, std::promise<bool>&
         }
     );
 
-    // maybe a little bit question,,, should be set only when they are changing.... ??? I think ...
-    online_value.set_value(online);
-    connected_value.set_value(connected);
+    online_record = online;
+    connected_record = connected;
+
+    ato_online = online;
+    ato_connected = connected;
 
     dds::sub::cond::ReadCondition gps_read_condition(
         gps_reader,
@@ -157,6 +162,16 @@ void run_tele_subscriber_application(unsigned int domain_id, std::promise<bool>&
 
         // Run the handlers of the active conditions
         waitset.dispatch(dds::core::Duration(3));
+
+        // maybe a little bit question,,, should be set only when they are changing.... ??? I think ...
+        if (online != online_record) {
+            ato_online = online;
+            online_record = online;
+        }
+        if (connected != connected_record) {
+            ato_connected = connected;
+            connected_record = connected;
+        }
 
     }
 }
