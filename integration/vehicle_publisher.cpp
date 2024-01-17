@@ -9,7 +9,7 @@
 #include "data.hpp"
 
 
-void basic_properties(bool* online, bool* connected) {
+void basic_properties(bool& online, bool& connected) {
     std::string str_online;
     std::string str_connected;
 
@@ -17,31 +17,31 @@ void basic_properties(bool* online, bool* connected) {
     std::getline(std::cin, str_online);
 
     if (str_online == "y") {
-        *online = TRUE;
+        online = TRUE;
 
         std::cout << "connected ? (y/n)" << std::endl;
         std::getline(std::cin, str_connected);
 
         if (str_connected == "y") {
-            *connected = TRUE;
+            connected = TRUE;
         }
         else {
-            *connected = FALSE;
+            connected = FALSE;
         }
     }
     else {
-        *online = FALSE;
-        *connected = FALSE;
+        online = FALSE;
+        connected = FALSE;
     }
 }
 
-void run_vehicle_publisher_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected) {
+void run_vehicle_publisher_application(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected) {
 
     std::string vin = "vehicle" + std::to_string(domain_id);
 
     bool online;
     bool connected;
-    basic_properties(&online, &connected);
+    basic_properties(online, connected);
 
     bool online_record;
     bool connected_record;
@@ -132,7 +132,8 @@ void run_vehicle_publisher_application(unsigned int domain_id, std::atomic<bool>
             std::getline(std::cin, str_change);
 
             if (str_change == "y") {
-                basic_properties(&online, &connected);
+                basic_properties(online, connected);
+
                 if (online != online_record) {
                     ato_online = online;
                     online_record = online;

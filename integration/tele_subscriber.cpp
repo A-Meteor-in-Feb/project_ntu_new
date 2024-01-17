@@ -8,7 +8,7 @@
 
 #include "data.hpp"
 
-int process_data(dds::sub::DataReader<status_data> status_reader, bool* online, bool* connected) {
+int process_data(dds::sub::DataReader<status_data> status_reader, bool& online, bool& connected) {
 
     // Take all samples
     int count = 0;
@@ -23,19 +23,19 @@ int process_data(dds::sub::DataReader<status_data> status_reader, bool* online, 
 
             if (sample.data().online()) {
 
-                *online = TRUE;
+                online = TRUE;
 
                 if (sample.data().connected()) {
-                    *connected = TRUE;
+                    connected = TRUE;
                 }
                 else {
-                    *connected = FALSE;
+                    connected = FALSE;
                 }
 
             }
             else {
-                *online = FALSE;
-                *connected = FALSE;
+                online = FALSE;
+                connected = FALSE;
             }
         }
         else {
@@ -80,7 +80,7 @@ void run_tele_subscriber_application(unsigned int domain_id, std::atomic<bool>& 
         status_reader,
         dds::sub::status::DataState::any(),
         [status_reader, &samples_read, &online, &connected, domain_id]() {
-            samples_read += process_data(status_reader, &online, &connected);
+            samples_read += process_data(status_reader, online, connected);
         }
     );
 

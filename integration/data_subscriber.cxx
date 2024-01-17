@@ -12,8 +12,8 @@
 #include "application.hpp" 
 
 //declaration
-void run_tele_subscriber_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected);
-void run_tele_publisher(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected);
+void run_tele_subscriber_application(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected);
+void run_tele_publisher(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected);
 
 
 int main(int argc, char *argv[]){

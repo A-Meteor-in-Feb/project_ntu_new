@@ -10,8 +10,8 @@
 #include "data.hpp"
 
 //declaration
-void run_vehicle_publisher_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected);
-void run_vehicle_subscriber(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected);
+void run_vehicle_publisher_application(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected);
+void run_vehicle_subscriber(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected);
 
 int main(int argc, char* argv[]) {
 

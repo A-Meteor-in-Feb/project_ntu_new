@@ -29,7 +29,7 @@ void process_data(dds::sub::DataReader<control_data> control_reader) {
 }
 
 
-void run_vehicle_subscriber_application(unsigned int domain_id, std::atomic<bool> &online, std::atomic<bool> &connected) {
+void run_vehicle_subscriber_application(unsigned int domain_id, std::atomic<bool>& online, std::atomic<bool>& connected) {
 	/*
 	* parameter: domain_id, which is supposed to be same as vehicle2tele app.
 	*			 online: true or false; connected: true or false.
@@ -65,7 +65,7 @@ void run_vehicle_subscriber_application(unsigned int domain_id, std::atomic<bool
 	}
 }
 
-void run_vehicle_subscriber(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected) {
+void run_vehicle_subscriber(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected) {
 	while (true) {
 		//std::cout << online.load() << connected.load() << std::endl;
 		if (ato_online.load() && ato_connected.load()) {

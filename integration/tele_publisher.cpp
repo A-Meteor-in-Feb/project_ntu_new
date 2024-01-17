@@ -9,7 +9,7 @@
 #include "data.hpp"
 
 
-void run_tele_publisher_application(unsigned int domain_id, std::atomic<bool> &ato_online, std::atomic<bool> &ato_connected) {
+void run_tele_publisher_application(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected) {
 	/*
 	* parameter: domain_id, online, connected
 	* return: nothing
@@ -46,11 +46,11 @@ void run_tele_publisher_application(unsigned int domain_id, std::atomic<bool> &a
 	
 }
 
-void run_tele_publisher(unsigned int domain_id, std::atomic<bool> &online, std::atomic<bool> &connected) {
+void run_tele_publisher(unsigned int domain_id, std::atomic<bool>& ato_online, std::atomic<bool>& ato_connected) {
 	
 	while (true) {
-		if (online.load() & connected.load()) {
-			run_tele_publisher_application(domain_id, std::ref(online), std::ref(connected));
+		if (ato_online.load() & ato_connected.load()) {
+			run_tele_publisher_application(domain_id, std::ref(ato_online), std::ref(ato_connected));
 		}
 	}
 }
